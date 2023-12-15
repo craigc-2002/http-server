@@ -1,5 +1,7 @@
+SRCS = libserver.c server.c
+OBJS = $(SRCS:.c=.o)
+
 all: server
 
-
-server: server.c
+server: $(OBJS)
 	$(CC) $(CFLAGS) $^ -o $@
