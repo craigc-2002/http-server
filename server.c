@@ -58,7 +58,7 @@ int main()
     fseek(requested_file, 0, SEEK_SET);
 
     char* req_file_buf = malloc(file_length+1); // buffer to hold file contents + null terminator
-    fgets(req_file_buf, file_length+1, requested_file);
+    fread(req_file_buf, sizeof(char), file_length+1, requested_file); // read file contents into buffer 1 byte at a time
     req_file_buf[file_length] = 0;
     fclose(requested_file);
     printf("%s\n", req_file_buf);

@@ -20,11 +20,12 @@ char* http_response(int status_code, char* content)
 
     // template string for an HTTP response
     const char template[] = 
-    "HTTP/1.1 %d OK\
-    Content-Type: text/html\
-    Content-Length: %d\
-    \n\n\
-    %s";
+    "HTTP/1.1 %d OK\r\n"
+    "Content-Type: text/html\r\n"
+    "Content-Length: %d\r\n"
+    "Connection: close\r\n"
+    "\n"
+    "%s\n";
 
     // build the string from the response template
     char* response;
