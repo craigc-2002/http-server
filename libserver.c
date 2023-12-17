@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "libserver.h"
 
@@ -20,7 +21,7 @@ char* http_response(int status_code, char* content)
 
     // template string for an HTTP response
     const char template[] = 
-    "HTTP/1.1 %d OK\r\n"
+    "HTTP/1.1 %d \r\n"
     "Content-Type: text/html\r\n"
     "Content-Length: %d\r\n"
     "Connection: close\r\n"
@@ -33,16 +34,55 @@ char* http_response(int status_code, char* content)
     int length = snprintf(response, 0, template, status_code, (int)strlen(content), content);  // return value of snprintf is the number of chars that would be written, gives the length of the formatted string
     if (length < 0)
     {
+        fprintf(stderr, "Can't form request string");
         exit(-1);
     }
 
     response = malloc(length+1);  // allocate enough space for the response + null terminator
     if (response == NULL) // check return value from malloc
     {
+        fprintf(stderr, "Memory allocation for request string failed");
         exit(-1);
     }
     
     snprintf(response, length+1, template, status_code, (int)strlen(content), content); // save fotmatted response + null terminator to buffer
 
    return response;
+}
+
+http_reply_t parse_http_request(char* request_str)
+{
+    /* Parse an HTTP request
+     *
+     * Return a http_reply_t struct containing the requested file if applicable and the status code of the reply
+     */
+
+    http_reply_t request;
+    memset(&request, 0, sizeof(struct http_reply_t));
+
+    // GET /file.html .....
+    // get file name from the request, filename is given from the 5th character of the GET request to the first space
+    char* f = request_str + 5;
+    // check that a space exits in the request, if not then request is malformed and 400 status code should be returned
+    char* space = strchr(f, ' ');
+    if (space == NULL)
+    {
+        fprintf(stderr, "Invalid HTTP request");
+        request.status_code = 400;
+        return request;
+    }
+    *space = 0;
+    strcpy(request.requested_file, f);
+
+    // check that the requested file exists and can be accessed, if not a 404 status code should be returned
+    if ((access(request.requested_file, R_OK)) != 0)
+    {
+        request.status_code = 404;
+        return request;
+    }
+
+    request.status_code = 200;
+    printf("%s\n", request.requested_file);
+
+    return request;
 }
