@@ -8,9 +8,17 @@
 
 #include "libserver.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    printf("Server Started\n\n");
+    // check command line arguments to see if a port number has been specified, if not default to 8080
+    uint16_t port_num = 8080;
+
+    if (argc > 1)
+    {
+        port_num = atoi(argv[1]);
+    }
+
+    printf("Server Started on port %d\n\n", port_num);
 
     // open an IPv4 TCP socket
     int s = socket(AF_INET, SOCK_STREAM, 0);
@@ -25,7 +33,7 @@ int main()
     // bind socket to port 8080
     struct sockaddr_in addr = {
         AF_INET, // IPv4
-        0x901f, // port 8080
+        htons(port_num), //0x901f, // port 8080
         0};
 
     bind(s, (const struct sockaddr*) &addr, sizeof(addr));
