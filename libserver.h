@@ -13,4 +13,4 @@ typedef struct http_reply_t{
 char* http_response(int status_code, char* content);
 
 // parse an HTTP request
-http_reply_t parse_http_request(char* request);
+http_reply_t parse_http_request(char* request, const char* file_path);

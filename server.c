@@ -11,12 +11,21 @@
 
 int main(int argc, char* argv[])
 {
-    // parse arguments using getopt to check if the user wants the server to run continuously
+    /* parse arguments using getopt to check if the user wants the server to run continuously 
+     *
+     * -c : Run server continously. If not given, the server only replies to a single request and then exits
+     * -f : Path to search for requested files.  Can be absolute or relative to loaction of binary 
+     */
     bool run_continuous = false;
+    
+    char default_path[] = "./";
+    char* file_path = default_path; // path that will be searched for requested files
+    
     int opt;
     extern int optind;
+    extern char* optarg;
 
-    while ((opt = getopt(argc, argv, "c")) != -1)
+    while ((opt = getopt(argc, argv, "cf:")) != -1)
     {
         switch (opt)
         {
@@ -24,8 +33,15 @@ int main(int argc, char* argv[])
                 run_continuous = true;
                 break;
 
+            case 'f':
+                file_path = optarg;
+                break;
+
             default:
-                fprintf(stderr, "Usage: ./server [-c (run continously)] [port_num]");
+                fprintf(stderr, "Usage:\n./server [options] [port_num]\n\n");
+                fprintf(stderr, "Options:\n");
+                fprintf(stderr, "-c run server continuously:\n");
+                fprintf(stderr, "-f : path to search for requested files\n\n");
                 exit(-1);
         }
     }
@@ -38,7 +54,8 @@ int main(int argc, char* argv[])
         port_num = atoi(argv[optind]);
     }
 
-    printf("Server Started on port %d\n\n", port_num);
+    printf("Server Started on port %d\n", port_num);
+    printf("Serving files from %s\n\n", file_path);
 
     // open an IPv4 TCP socket
     int s = socket(AF_INET, SOCK_STREAM, 0);
@@ -74,7 +91,7 @@ int main(int argc, char* argv[])
         printf("%s\n", buf);
 
         // parse HTTP request
-        http_reply_t reply = parse_http_request(buf);
+        http_reply_t reply = parse_http_request(buf, file_path);
 
         // construct correct HTTP response depending on the reply status code
         char* response;

@@ -50,11 +50,12 @@ char* http_response(int status_code, char* content)
    return response;
 }
 
-http_reply_t parse_http_request(char* request_str)
+http_reply_t parse_http_request(char* request_str, const char* file_path)
 {
     /* Parse an HTTP request
      *
      * Return a http_reply_t struct containing the requested file if applicable and the status code of the reply
+     * file_path is the path that should be prepended to the requested path from the GET request
      */
 
     http_reply_t request;
@@ -72,7 +73,15 @@ http_reply_t parse_http_request(char* request_str)
         return request;
     }
     *space = 0;
-    strcpy(request.requested_file, f);
+
+    int total_file_path_len = strlen(file_path) + strlen(f);
+    char* full_path = malloc(total_file_path_len + 1);
+    
+    strcpy(full_path, file_path);
+    strcat(full_path, f); // concatenate the requested file to the path
+    
+    strcpy(request.requested_file, full_path);
+    free(full_path);
 
     // check that the requested file exists and can be accessed, if not a 404 status code should be returned
     if ((access(request.requested_file, R_OK)) != 0)
