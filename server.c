@@ -15,43 +15,46 @@ int main(int argc, char* argv[])
      *
      * -c : Run server continously. If not given, the server only replies to a single request and then exits
      * -f : Path to search for requested files.  Can be absolute or relative to loaction of binary 
+     * -p : Port the server will run on. Defualts to 8080
      */
     bool run_continuous = false;
+    char* file_path;
+    uint16_t port_num = 8080;
     
     char default_path[] = "./";
-    char* file_path = default_path; // path that will be searched for requested files
+    file_path = default_path; // path that will be searched for requested files
     
-    int opt;
-    extern int optind;
-    extern char* optarg;
-
-    while ((opt = getopt(argc, argv, "cf:")) != -1)
+    // parse arguments with getopt
     {
-        switch (opt)
+        int opt;
+        extern int optind;
+        extern char* optarg;
+
+        while ((opt = getopt(argc, argv, "cf:p:")) != -1)
         {
-            case 'c':
-                run_continuous = true;
-                break;
+            switch (opt)
+            {
+                case 'c':
+                    run_continuous = true;
+                    break;
 
-            case 'f':
-                file_path = optarg;
-                break;
+                case 'f':
+                    file_path = optarg;
+                    break;
 
-            default:
-                fprintf(stderr, "Usage:\n./server [options] [port_num]\n\n");
-                fprintf(stderr, "Options:\n");
-                fprintf(stderr, "-c run server continuously:\n");
-                fprintf(stderr, "-f : path to search for requested files\n\n");
-                exit(-1);
+                case 'p':
+                    port_num = atoi(optarg);
+                    break;
+
+                default:
+                    fprintf(stderr, "Usage:\n./server [options]\n\n");
+                    fprintf(stderr, "Options:\n");
+                    fprintf(stderr, "-c run server continuously:\n");
+                    fprintf(stderr, "-f : path to search for requested files\n");
+                    fprintf(stderr, "-p : port the server will run on\n\n");
+                    exit(-1);
+            }
         }
-    }
-
-    // check command line arguments to see if a port number has been specified, if not default to 8080
-    uint16_t port_num = 8080;
-
-    if (optind < argc)
-    {
-        port_num = atoi(argv[optind]);
     }
 
     printf("Server Started on port %d\n", port_num);
