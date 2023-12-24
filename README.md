@@ -4,7 +4,9 @@ Very basic minimalist HTTP server. Based on [this video](https://www.youtube.com
 
 It has no security or error checking, so don't use it.
 
-Files are served from a specified directory, which defaults to the directory the server is run from, but can be specified with command line options. The given path is prepended to the file requested in the GET request, so a / must be added at the end of a directory name.
+Files are served from a specified directory, which defaults to the directory the server is run from, but can be specified with command line options. The given path is prepended to the file requested in0 the GET request, so a / must be added at the end of a directory name.
+
+Only GET requests are handled, any other request type will be replied to with 405, method not allowed.
 
 ## Usage
 ```./server [options]```
@@ -28,5 +30,4 @@ Note: This changes depending on syslog implementation used. A different logging 
 ## To Do
 - build directory for build artifacts
 - update readme
-- implement support for other http requests (send correct response for not accepting non-GET requests)
 - implement support for different file types (change content-type header)

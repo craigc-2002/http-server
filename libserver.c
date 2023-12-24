@@ -54,6 +54,8 @@ char* http_response(int status_code, char* content)
 http_reply_t parse_http_request(char* request_str, const char* file_path)
 {
     /* Parse an HTTP request
+     * 
+     * The request method is checked, any requests that are not GET requests will be replied to with 405, method not allowed
      *
      * Return a http_reply_t struct containing the requested file if applicable and the status code of the reply
      * file_path is the path that should be prepended to the requested path from the GET request
@@ -62,34 +64,57 @@ http_reply_t parse_http_request(char* request_str, const char* file_path)
     http_reply_t request;
     memset(&request, 0, sizeof(struct http_reply_t));
 
-    // GET /file.html .....
-    // get file name from the request, filename is given from the 5th character of the GET request to the first space
-    char* f = request_str + 5;
-    // check that a space exits in the request, if not then request is malformed and 400 status code should be returned
-    char* space = strchr(f, ' ');
-    if (space == NULL)
+    // check that the request is a GET request, if not return a 405 status code
     {
-        syslog(LOG_INFO, "Invalid HTTP request");
-        request.status_code = 400;
-        return request;
+        char* method = request_str;
+
+        char* space = strchr(method, ' ');
+        if (space == NULL)
+        {
+            syslog(LOG_INFO, "Invalid HTTP request");
+            request.status_code = 400;
+            return request;
+        }
+        *space = 0;
+
+        if (strcmp(method, "GET") != 0)
+        {
+            syslog(LOG_INFO, "HTTP request method not allowed: %s", method);
+            request.status_code = 405;
+            return request;
+        }
     }
-    *space = 0;
 
-    int total_file_path_len = strlen(file_path) + strlen(f);
-    char* full_path = malloc(total_file_path_len + 1);
-    
-    strcpy(full_path, file_path);
-    strcat(full_path, f); // concatenate the requested file to the path
-    
-    strcpy(request.requested_file, full_path);
-    free(full_path);
-
-    // check that the requested file exists and can be accessed, if not a 404 status code should be returned
-    if ((access(request.requested_file, R_OK)) != 0)
+    // get file name from the request, filename is given from the 5th character of the GET request to the first space
+    // GET /file.html .....
     {
-        request.status_code = 404;
-        syslog(LOG_INFO, "Requested file not found: %s", request.requested_file);
-        return request;
+        char* f = request_str + 5;
+        // check that a space exits in the request, if not then request is malformed and 400 status code should be returned
+        char* space = strchr(f, ' ');
+        if (space == NULL)
+        {
+            syslog(LOG_INFO, "Invalid HTTP request");
+            request.status_code = 400;
+            return request;
+        }
+        *space = 0;
+
+        int total_file_path_len = strlen(file_path) + strlen(f);
+        char* full_path = malloc(total_file_path_len + 1);
+        
+        strcpy(full_path, file_path);
+        strcat(full_path, f); // concatenate the requested file to the path
+        
+        strcpy(request.requested_file, full_path);
+        free(full_path);
+
+        // check that the requested file exists and can be accessed, if not a 404 status code should be returned
+        if ((access(request.requested_file, R_OK)) != 0)
+        {
+            request.status_code = 404;
+            syslog(LOG_INFO, "Requested file not found: %s", request.requested_file);
+            return request;
+        }
     }
 
     request.status_code = 200;

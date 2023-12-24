@@ -158,6 +158,12 @@ int main(int argc, char* argv[])
                 break;
             }
 
+            case 405:
+            {
+                // request is for an invalid method
+                response = http_response(405, "Method not allowed");
+            }
+
             default:
             {
                 // the reply doesn't have a status code handled above, return a server error
