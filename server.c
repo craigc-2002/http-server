@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
                 syslog(LOG_DEBUG, "%s\n", req_file_buf); // send the requested file buffer to debug log
 
                 // form HTTP response with file contents
-                response = http_response(200, req_file_buf);
+                response = http_response_content_type(200, req_file_buf, reply.file_type);
                 break;
             }
 

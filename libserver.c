@@ -12,7 +12,7 @@
 
 #include "libserver.h"
 
-char* http_response(int status_code, char* content)
+char* http_response_content_type(int status_code, char* content, const char* content_type)
 {
     /* Build a string containing the HTTP response.
        Includes headers with status code and content length and the response content
@@ -23,7 +23,7 @@ char* http_response(int status_code, char* content)
     // template string for an HTTP response
     const char template[] = 
     "HTTP/1.1 %d \r\n"
-    "Content-Type: text/html\r\n"
+    "Content-Type: %s\r\n"
     "Content-Length: %d\r\n"
     "Connection: close\r\n"
     "\n"
@@ -32,7 +32,7 @@ char* http_response(int status_code, char* content)
     // build the string from the response template
     char* response;
 
-    int length = snprintf(response, 0, template, status_code, (int)strlen(content), content);  // return value of snprintf is the number of chars that would be written, gives the length of the formatted string
+    int length = snprintf(response, 0, template, status_code, content_type, (int)strlen(content), content);  // return value of snprintf is the number of chars that would be written, gives the length of the formatted string
     if (length < 0)
     {
         syslog(LOG_ERR, "Can't form request string");
@@ -46,9 +46,14 @@ char* http_response(int status_code, char* content)
         exit(-1);
     }
     
-    snprintf(response, length+1, template, status_code, (int)strlen(content), content); // save fotmatted response + null terminator to buffer
+    snprintf(response, length+1, template, status_code, content_type, (int)strlen(content), content); // save fotmatted response + null terminator to buffer
 
    return response;
+}
+
+char* http_response(int status_code, char* content)
+{
+    http_response_content_type(status_code, content, "text/plain");
 }
 
 http_reply_t parse_http_request(char* request_str, const char* file_path)
@@ -114,6 +119,20 @@ http_reply_t parse_http_request(char* request_str, const char* file_path)
             request.status_code = 404;
             syslog(LOG_INFO, "Requested file not found: %s", request.requested_file);
             return request;
+        }
+
+        // parse the requested filename for file extension, use this to set the content-type reply header
+        // default to text/plain if a file extension not given
+        char* ext = strchr(f, '.'); 
+        strcpy(request.file_type, "text/plain");
+        if (ext != NULL)
+        {
+            if (strcmp(ext, ".html") == 0)
+            {
+                printf("%s\n", ext);
+                memset(request.file_type, 0, strlen(request.file_type));
+                strcpy(request.file_type, "text/html");
+            }
         }
     }
 

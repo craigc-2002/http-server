@@ -28,4 +28,3 @@ This makes all log entries appear in /var/log/http_server_debug.log and informat
 Note: This changes depending on syslog implementation used. A different logging method should be used for portable applications.
 
 ## To Do
-- implement support for different file types (change content-type header)
