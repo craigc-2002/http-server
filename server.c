@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <syslog.h>
 
 #include "libserver.h"
 
@@ -57,8 +58,11 @@ int main(int argc, char* argv[])
         }
     }
 
-    printf("Server Started on port %d\n", port_num);
-    printf("Serving files from %s\n\n", file_path);
+    // logging for new connections and errors
+    openlog("http_server", LOG_CONS|LOG_PID, LOG_DAEMON);
+
+    syslog(LOG_INFO, "Server Started on port %d", port_num);
+    syslog(LOG_INFO, "Serving files from %s", file_path);
 
     // open an IPv4 TCP socket
     int s = socket(AF_INET, SOCK_STREAM, 0);
@@ -82,16 +86,23 @@ int main(int argc, char* argv[])
     do
     {
         // accept the first connection
+        struct sockaddr_in* client_addr; // struct to contain the address of the client socket
+        socklen_t addr_len = sizeof(struct sockaddr_in);  
+
+        //  UPDATE THIS TO GET THE PROPER IP ADDRESS OF CLIENT
+        //int client_fd = accept(s, (struct sockaddr*)client_addr, &addr_len);
         int client_fd = accept(s, 0, 0);
         if (client_fd < 0)
         {
+            syslog(LOG_ERR, "Failure connecting to client socket: %m");
             exit(-1);
         }
+        //printf("Connected to client at: %d\n", ntohl(client_addr->sin_addr.s_addr));
 
         // receive HTTP request from client into a buffer (if request is more than 255 bytes it will be truncated, only the requested file is actually read)
         char buf[256] = {0};
         recv(client_fd, buf, 255, 0);
-        printf("%s\n", buf);
+        syslog(LOG_DEBUG, "Request: %s\n", buf);
 
         // parse HTTP request
         http_reply_t reply = parse_http_request(buf, file_path);
@@ -111,7 +122,7 @@ int main(int argc, char* argv[])
                 // check that the requested file is opened successfully
                 if (requested_file == NULL)
                 {
-                    fprintf(stderr, "Requested file can't be opened");
+                    syslog(LOG_ERR, "Requested file can't be opened");
                     exit(-1);
                 }
 
@@ -124,7 +135,8 @@ int main(int argc, char* argv[])
                 fread(req_file_buf, sizeof(char), file_length+1, requested_file); // read file contents into buffer 1 byte at a time
                 req_file_buf[file_length] = 0;
                 fclose(requested_file);
-                printf("%s\n", req_file_buf);
+
+                syslog(LOG_DEBUG, "%s\n", req_file_buf); // send the requested file buffer to debug log
 
                 // form HTTP response with file contents
                 response = http_response(200, req_file_buf);
@@ -153,7 +165,7 @@ int main(int argc, char* argv[])
         }
 
 
-        printf("\nHTTP Response:\n%s\n", response);
+        syslog(LOG_DEBUG, "\nHTTP Response: %s\n", response); // send the full HTTP response to debug log
         // send response to client
         write(client_fd, response, strlen(response));
 

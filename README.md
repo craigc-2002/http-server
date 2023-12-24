@@ -14,8 +14,19 @@ Files are served from a specified directory, which defaults to the directory the
 - -f : Path to search for requested files.  Can be absolute or relative to loaction of binary
 - -p : Port the server will run on. Defualts to 8080
 
+## Logging
+Logging is implemented using syslog. This works but the log entries just appear in /var/log/syslog along with the logs from other servises. To solve this, the following can be added to the /etc/rsyslog.conf file:
+```
+if $syslogtag contains "http_server" then /var/log/http_server_debug.log 
+if $syslogtag contains "http_server" and $syslogseverity-text != "DEBUG" then /var/log/http_server.log
+```
+
+This makes all log entries appear in /var/log/http_server_debug.log and informational messages and above appear in /var/log/http_server_debug.log.
+
+Note: This changes depending on syslog implementation used. A different logging method should be used for portable applications.
+
 ## To Do
-- remove debugging output and add proper logging - use syslog library
 - build directory for build artifacts
 - update readme
-- implement support for other http requests
+- implement support for other http requests (send correct response for not accepting non-GET requests)
+- implement support for different file types (change content-type header)

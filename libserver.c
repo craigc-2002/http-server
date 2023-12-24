@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <syslog.h>
 
 #include "libserver.h"
 
@@ -34,14 +35,14 @@ char* http_response(int status_code, char* content)
     int length = snprintf(response, 0, template, status_code, (int)strlen(content), content);  // return value of snprintf is the number of chars that would be written, gives the length of the formatted string
     if (length < 0)
     {
-        fprintf(stderr, "Can't form request string");
+        syslog(LOG_ERR, "Can't form request string");
         exit(-1);
     }
 
     response = malloc(length+1);  // allocate enough space for the response + null terminator
     if (response == NULL) // check return value from malloc
     {
-        fprintf(stderr, "Memory allocation for request string failed");
+        syslog(LOG_ERR, "Memory allocation for request string failed");
         exit(-1);
     }
     
@@ -68,7 +69,7 @@ http_reply_t parse_http_request(char* request_str, const char* file_path)
     char* space = strchr(f, ' ');
     if (space == NULL)
     {
-        fprintf(stderr, "Invalid HTTP request");
+        syslog(LOG_INFO, "Invalid HTTP request");
         request.status_code = 400;
         return request;
     }
@@ -87,11 +88,12 @@ http_reply_t parse_http_request(char* request_str, const char* file_path)
     if ((access(request.requested_file, R_OK)) != 0)
     {
         request.status_code = 404;
+        syslog(LOG_INFO, "Requested file not found: %s", request.requested_file);
         return request;
     }
 
     request.status_code = 200;
-    printf("%s\n", request.requested_file);
+    syslog(LOG_INFO, "Requested file: %s\n", request.requested_file);
 
     return request;
 }
