@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <sys/sendfile.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
@@ -86,18 +87,18 @@ int main(int argc, char* argv[])
     do
     {
         // accept the first connection
-        struct sockaddr_in* client_addr; // struct to contain the address of the client socket
+        struct sockaddr_in client_addr; // struct to contain the address of the client socket
         socklen_t addr_len = sizeof(struct sockaddr_in);  
 
         //  UPDATE THIS TO GET THE PROPER IP ADDRESS OF CLIENT
-        //int client_fd = accept(s, (struct sockaddr*)client_addr, &addr_len);
-        int client_fd = accept(s, 0, 0);
+        int client_fd = accept(s, (struct sockaddr*)&client_addr, &addr_len);
+        //int client_fd = accept(s, 0, 0);
         if (client_fd < 0)
         {
             syslog(LOG_ERR, "Failure connecting to client socket: %m");
             exit(-1);
         }
-        //printf("Connected to client at: %d\n", ntohl(client_addr->sin_addr.s_addr));
+        syslog(LOG_INFO, "Connected to client at: %s\n", (inet_ntoa(client_addr.sin_addr)));
 
         // receive HTTP request from client into a buffer (if request is more than 255 bytes it will be truncated, only the requested file is actually read)
         char buf[256] = {0};
@@ -174,5 +175,6 @@ int main(int argc, char* argv[])
 
     }while (run_continuous);
 
+    syslog(LOG_INFO, "Server stopped");
     close(s);
 }
