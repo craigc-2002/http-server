@@ -1,12 +1,12 @@
 # http_server
 ## Basic HTTP Server
-Very basic minimalist HTTP server. Based on [this video](https://www.youtube.com/watch?v=2HrYIl6GpYg) by Nir Lichtman, and extended by Craig Cochrane.
-
-It has no security or error checking, so don't use it.
+Very basic HTTP server for serving static files. Based on [this video](https://www.youtube.com/watch?v=2HrYIl6GpYg) by Nir Lichtman, and extended by Craig Cochrane.
 
 Files are served from a specified directory, which defaults to the directory the server is run from, but can be specified with command line options. The given path is prepended to the file requested in0 the GET request, so a / must be added at the end of a directory name.
 
 Only GET requests are handled, any other request type will be replied to with 405, method not allowed.
+
+It has no security or error checking, so don't use it on the internet.
 
 ## Usage
 ```./server [options]```
@@ -29,5 +29,4 @@ Note: This changes depending on syslog implementation used. A different logging 
 
 ## To Do
 - build directory for build artifacts
-- update readme
 - implement support for different file types (change content-type header)
