@@ -11,7 +11,7 @@ typedef struct http_reply_t{
 } http_reply_t;
 
 // create an HTTP response string with the given status code and content
-char* http_response(int status_code, char* content);
+char* http_response(int status_code, char* content); // http response with content-type of text/html
 char* http_response_content_type(int status_code, char* content, const char* content_type);
 
 // parse an HTTP request

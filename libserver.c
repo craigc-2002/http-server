@@ -53,7 +53,7 @@ char* http_response_content_type(int status_code, char* content, const char* con
 
 char* http_response(int status_code, char* content)
 {
-    http_response_content_type(status_code, content, "text/plain");
+    http_response_content_type(status_code, content, "text/html");
 }
 
 http_reply_t parse_http_request(char* request_str, const char* file_path)
@@ -122,15 +122,58 @@ http_reply_t parse_http_request(char* request_str, const char* file_path)
         }
 
         // parse the requested filename for file extension, use this to set the content-type reply header
-        // default to text/plain if a file extension not given
+        // default to application/octet-stream if a file extension not given
         char* ext = strchr(f, '.'); 
-        strcpy(request.file_type, "text/plain");
-        if (ext != NULL)
+        strcpy(request.file_type, "application/octet-stream");
+
+        if (ext != NULL) // file has an extension which isn't .txt
         {
-            if (strcmp(ext, ".html") == 0)
+            memset(request.file_type, 0, strlen(request.file_type)); // clear current file type
+
+            if ((strcmp(ext, ".html") == 0) || (strcmp(ext, ".htm") == 0))
             {
-                memset(request.file_type, 0, strlen(request.file_type)); // clear current file type
                 strcpy(request.file_type, "text/html");
+            }
+            else if (strcmp(ext, ".css") == 0)
+            {
+                strcpy(request.file_type, "text/css");
+            }
+            else if (strcmp(ext, ".js") == 0)
+            {
+                strcpy(request.file_type, "text/javascript");
+            }
+            else if (strcmp(ext, ".csv") == 0)
+            {
+                strcpy(request.file_type, "text/csv");
+            }
+            else if (strcmp(ext, ".json") == 0)
+            {
+                strcpy(request.file_type, "application/json");
+            }
+            else if (strcmp(ext, ".png") == 0)
+            {
+                strcpy(request.file_type, "image/png");
+            }
+            else if (strcmp(ext, ".gif") == 0)
+            {
+                strcpy(request.file_type, "image/gif");
+            }
+            else if ((strcmp(ext, ".jpg") == 0) || (strcmp(ext, ".jpeg") == 0))
+            {
+                strcpy(request.file_type, "image/jpeg");
+            }
+            else if (strcmp(ext, ".ico") == 0)
+            {
+                strcpy(request.file_type, "image/vnd.microsoft.icon");
+            }
+            else if (strcmp(ext, ".bin") == 0)
+            {
+                strcpy(request.file_type, "application/octet-stream");
+            }
+            else
+            {
+                // default to text/plain for other file extensions
+                strcpy(request.file_type, "text/plain");
             }
         }
     }

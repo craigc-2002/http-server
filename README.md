@@ -2,7 +2,7 @@
 ## Basic HTTP Server
 Very basic HTTP server for serving static files. Based on [this video](https://www.youtube.com/watch?v=2HrYIl6GpYg) by Nir Lichtman, and extended by Craig Cochrane.
 
-Files are served from a specified directory, which defaults to the directory the server is run from, but can be specified with command line options. The given path is prepended to the file requested in0 the GET request, so a / must be added at the end of a directory name.
+Files are served from a specified directory, which defaults to the directory the server is run from, but can be specified with command line options. The given path is prepended to the file requested in the GET request, so a / must be added at the end of a directory name.
 
 Only GET requests are handled, any other request type will be replied to with 405, method not allowed.
 
@@ -27,4 +27,4 @@ This makes all log entries appear in /var/log/http_server_debug.log and informat
 
 Note: This changes depending on syslog implementation used. A different logging method should be used for portable applications.
 
-## To Do
+## To Do  
