@@ -129,8 +129,7 @@ http_reply_t parse_http_request(char* request_str, const char* file_path)
         {
             if (strcmp(ext, ".html") == 0)
             {
-                printf("%s\n", ext);
-                memset(request.file_type, 0, strlen(request.file_type));
+                memset(request.file_type, 0, strlen(request.file_type)); // clear current file type
                 strcpy(request.file_type, "text/html");
             }
         }
