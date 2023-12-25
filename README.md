@@ -16,6 +16,11 @@ It has no security or error checking, so don't use it on the internet.
 - -f : Path to search for requested files.  Can be absolute or relative to loaction of binary
 - -p : Port the server will run on. Defualts to 8080
 
+### Example Usage
+```./server -f /var/www/ -p 8000 -c```
+
+Run the server continuously on port 8000, serving files from /var/www/.
+
 ## Logging
 Logging is implemented using syslog. This works but the log entries just appear in /var/log/syslog along with the logs from other servises. To solve this, the following can be added to the /etc/rsyslog.conf file:
 ```
