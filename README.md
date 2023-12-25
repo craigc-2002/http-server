@@ -13,11 +13,11 @@ It has no security or error checking, so don't use it on the internet.
 
 ### Options
 - -c : Run server continuously. If not given, the server only replies to a single request and then exits
-- -f : Path to search for requested files.  Can be absolute or relative to loaction of binary
+- -d : Path to directory that will be searched for requested files.  Can be absolute or relative to PWD server called from
 - -p : Port the server will run on. Defualts to 8080
 
 ### Example Usage
-```./server -f /var/www/ -p 8000 -c```
+```./server -d /var/www/ -p 8000 -c```
 
 Run the server continuously on port 8000, serving files from /var/www/.
 
@@ -31,5 +31,3 @@ if $syslogtag contains "http_server" and $syslogseverity-text != "DEBUG" then /v
 This makes all log entries appear in /var/log/http_server_debug.log and informational messages and above appear in /var/log/http_server_debug.log.
 
 Note: This changes depending on syslog implementation used. A different logging method should be used for portable applications.
-
-## To Do  

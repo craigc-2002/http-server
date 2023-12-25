@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
         extern int optind;
         extern char* optarg;
 
-        while ((opt = getopt(argc, argv, "cf:p:")) != -1)
+        while ((opt = getopt(argc, argv, "cd:p:")) != -1)
         {
             switch (opt)
             {
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
                     run_continuous = true;
                     break;
 
-                case 'f':
+                case 'd':
                     file_path = optarg;
                     break;
 
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
                     fprintf(stderr, "Usage:\n./server [options]\n\n");
                     fprintf(stderr, "Options:\n");
                     fprintf(stderr, "-c run server continuously:\n");
-                    fprintf(stderr, "-f : path to search for requested files\n");
+                    fprintf(stderr, "-d : path to search for requested files\n");
                     fprintf(stderr, "-p : port the server will run on\n\n");
                     exit(-1);
             }
