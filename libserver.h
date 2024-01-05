@@ -14,5 +14,8 @@ typedef struct http_reply_t{
 char* http_response(int status_code, char* content); // http response with content-type of text/html
 char* http_response_content_type(int status_code, char* content, const char* content_type);
 
+// create an HTTP response for a redirect
+char* http_redirect(const char* dest);
+
 // parse an HTTP request
 http_reply_t parse_http_request(char* request, const char* file_path);

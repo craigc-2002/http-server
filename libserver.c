@@ -56,6 +56,35 @@ char* http_response(int status_code, char* content)
     http_response_content_type(status_code, content, "text/html");
 }
 
+char* http_redirect(const char* dest)
+{
+    // template string for an HTTP redirect
+    const char template[] = 
+    "HTTP/1.1 301 Moved Permanently\r\n"
+    "Location: %s\r\n";
+
+    // build the string from the response template
+    char* response;
+
+    int length = snprintf(response, 0, template, dest);  // return value of snprintf is the number of chars that would be written, gives the length of the formatted string
+    if (length < 0)
+    {
+        syslog(LOG_ERR, "Can't form response string");
+        exit(-1);
+    }
+
+    response = malloc(length+1);  // allocate enough space for the response + null terminator
+    if (response == NULL) // check return value from malloc
+    {
+        syslog(LOG_ERR, "Memory allocation for response string failed");
+        exit(-1);
+    }
+    
+    snprintf(response, length+1, template, dest); // save formatted response + null terminator to buffer
+
+   return response;
+}
+
 http_reply_t parse_http_request(char* request_str, const char* file_path)
 {
     /* Parse an HTTP request
@@ -103,6 +132,14 @@ http_reply_t parse_http_request(char* request_str, const char* file_path)
             return request;
         }
         *space = 0;
+
+        // check if the request is for the root path (/), if so return it without prepending file path
+        if (strcmp(f, "") == 0)
+        {
+            strcpy(request.requested_file, "/");
+            request.status_code = 200;
+            return request;
+        }
 
         int total_file_path_len = strlen(file_path) + strlen(f);
         char* full_path = malloc(total_file_path_len + 1);

@@ -25,6 +25,9 @@ int main(int argc, char* argv[])
     
     char default_path[] = "./";
     file_path = default_path; // path that will be searched for requested files
+
+    bool redirect_root = false; // whether the root URL (/) should be redirected to another page
+    char* root_page; // the page the root URL should be redirected to
     
     // parse arguments with getopt
     {
@@ -32,7 +35,7 @@ int main(int argc, char* argv[])
         extern int optind;
         extern char* optarg;
 
-        while ((opt = getopt(argc, argv, "cd:p:")) != -1)
+        while ((opt = getopt(argc, argv, "cd:p:r:")) != -1)
         {
             switch (opt)
             {
@@ -48,12 +51,24 @@ int main(int argc, char* argv[])
                     port_num = atoi(optarg);
                     break;
 
+                case 'r':
+                    redirect_root = true;
+                    root_page = malloc(strlen(optarg));
+                    if (root_page == NULL) // check return value from malloc
+                    {
+                        syslog(LOG_ERR, "Memory allocation for root page failed");
+                        exit(-1);
+                    }
+                    strcpy(root_page, optarg);
+                    break;
+
                 default:
                     fprintf(stderr, "Usage:\n./server [options]\n\n");
                     fprintf(stderr, "Options:\n");
                     fprintf(stderr, "-c run server continuously:\n");
                     fprintf(stderr, "-d : path to search for requested files\n");
-                    fprintf(stderr, "-p : port the server will run on\n\n");
+                    fprintf(stderr, "-p : port the server will run on\n");
+                    fprintf(stderr, "-r : file to redirect root URL to\n\n");
                     exit(-1);
             }
         }
@@ -111,6 +126,20 @@ int main(int argc, char* argv[])
         // construct correct HTTP response depending on the reply status code
         char* response;
 
+        // check if the root url / was requested
+        // if a root file is specified from command line arguments then redirect, if not send 404
+        if (strcmp(reply.requested_file, "/") == 0)
+        {
+            if (redirect_root)
+            {
+                reply.status_code = 301;
+                strcpy(reply.requested_file, root_page);
+            }else
+            {
+                reply.status_code = 404;
+            }
+        }
+
         switch (reply.status_code)
         {
             case 200:
@@ -141,6 +170,13 @@ int main(int argc, char* argv[])
 
                 // form HTTP response with file contents
                 response = http_response_content_type(200, req_file_buf, reply.file_type);
+                break;
+            }
+
+            case 301:
+            {
+                // redirect
+                response = http_redirect(reply.requested_file);
                 break;
             }
 

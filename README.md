@@ -15,6 +15,7 @@ It has no security or error checking, so don't use it on the internet.
 - -c : Run server continuously. If not given, the server only replies to a single request and then exits
 - -d : Path to directory that will be searched for requested files.  Can be absolute or relative to PWD server called from
 - -p : Port the server will run on. Defualts to 8080
+- -r : file to redirect the root URL to. If not given, the root URL is not redirected and a 404 is returned
 
 ### Example Usage
 ```./server -d /var/www/ -p 8000 -c```
