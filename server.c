@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     char default_path[] = "./";
     file_path = default_path; // path that will be searched for requested files
 
-    bool redirect_root = false; // whether the root URL (/) should be redirected to another page
+    bool serve_root = false; // whether the root URL (/) should be redirected to another page
     char* root_page; // the page the root URL should be redirected to
     
     // parse arguments with getopt
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
                     break;
 
                 case 'r':
-                    redirect_root = true;
+                    serve_root = true;
                     root_page = malloc(strlen(optarg));
                     if (root_page == NULL) // check return value from malloc
                     {
@@ -130,10 +130,11 @@ int main(int argc, char* argv[])
         // if a root file is specified from command line arguments then redirect, if not send 404
         if (strcmp(reply.requested_file, "/") == 0)
         {
-            if (redirect_root)
+            if (serve_root)
             {
-                reply.status_code = 301;
-                strcpy(reply.requested_file, root_page);
+                // if root should be served, then concatenate the root page to the file path
+		strcpy(reply.requested_file, file_path);
+                strcat(reply.requested_file, root_page);
             }else
             {
                 reply.status_code = 404;
@@ -152,7 +153,7 @@ int main(int argc, char* argv[])
                 // check that the requested file is opened successfully
                 if (requested_file == NULL)
                 {
-                    syslog(LOG_ERR, "Requested file can't be opened");
+                    syslog(LOG_ERR, "Requested file can't be opened: %s", reply.requested_file);
                     exit(-1);
                 }
 
